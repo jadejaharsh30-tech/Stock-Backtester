@@ -1,0 +1,2601 @@
+Y<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockBacktester Pro - Experimental</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS Variables for Color Schemes */
+        :root {
+            /* Professional Light Theme (Default) */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #60a5fa;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Modern Neutral Theme */
+        .theme-neutral {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #d1d5db;
+            --accent-primary: #059669;
+            --accent-secondary: #10b981;
+            --success-color: #059669;
+            --error-color: #dc2626;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Elegant Dark Theme */
+        .theme-elegant {
+            --bg-primary: #1f2937;
+            --bg-secondary: #111827;
+            --bg-card: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-color: #4b5563;
+            --accent-primary: #f59e0b;
+            --accent-secondary: #fbbf24;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo i {
+            font-size: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .display-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .display-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .display-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .display-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .theme-selector {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .theme-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .theme-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .reset-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .reset-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Step Navigation */
+        .step-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .step-item.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .step-connector {
+            width: 40px;
+            height: 2px;
+            background: var(--border-color);
+        }
+
+        /* Step Content */
+        .step {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .step-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-header p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+
+        /* Strategy Selection */
+        .strategy-selector {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .strategy-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .strategy-format {
+            display: none;
+        }
+
+        .strategy-format.active {
+            display: block;
+        }
+
+        /* Strategy Dropdown */
+        .strategy-dropdown {
+            margin-bottom: 2rem;
+        }
+
+        .strategy-dropdown select {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .strategy-dropdown select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Strategy Cards Format */
+        .strategy-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .strategy-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .strategy-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .strategy-card.selected {
+            border-color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .strategy-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .strategy-card p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .strategy-card .card-params {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .strategy-card .param-item {
+            background: var(--bg-secondary);
+            padding: 0.5rem;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .strategy-card .param-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .strategy-card .param-value {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Strategy Details */
+        .strategy-details {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .strategy-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+
+        .strategy-params {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Modular Builder */
+        .modular-builder {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .indicators-section,
+        .rules-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .indicators-section h4,
+        .rules-section h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .indicators-section h4:hover,
+        .rules-section h4:hover {
+            color: var(--accent-primary);
+        }
+
+        .indicators-section h4 i,
+        .rules-section h4 i {
+            color: var(--accent-primary);
+        }
+
+        .indicator-card,
+        .rule-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            position: relative;
+        }
+
+        .indicator-card h5,
+        .rule-card h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+        }
+
+        .indicator-card .remove-btn,
+        .rule-card .remove-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card .remove-btn:hover,
+        .rule-card .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .indicator-params {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .condition-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr auto;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            align-items: end;
+        }
+
+        .condition-group label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+            display: block;
+            font-weight: 500;
+        }
+
+        .condition-group select, 
+        .condition-group input {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            min-height: 36px;
+            width: 100%;
+        }
+
+        .condition-group input {
+            min-width: 80px;
+        }
+
+        .condition-group select {
+            min-width: 100px;
+        }
+
+        .rule-logic {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .rule-logic label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .rule-logic select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .add-condition-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .add-condition-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .remove-condition-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            min-width: 32px;
+            min-height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-condition-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .rule-logic-between {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .rule-logic-between label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            font-weight: 500;
+        }
+
+        .rule-logic-between select {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+
+        /* Collapsible sections */
+        .section-header {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .section-content.expanded {
+            max-height: 2000px;
+        }
+
+        .modular-section {
+            margin-bottom: 2rem;
+        }
+
+        .modular-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .indicator-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .indicator-card:hover {
+            border-color: var(--accent-primary);
+            background: var(--bg-secondary);
+        }
+
+        .indicator-card.selected {
+            border-color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .logic-builder {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .condition-group {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .condition-group h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .condition-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 0.75rem;
+            align-items: end;
+        }
+
+        /* Configuration Step */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Results Step */
+        .results-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .performance-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .charts-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .chart-container {
+            height: 400px;
+        }
+
+        .trades-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .trades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .trades-table th,
+        .trades-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .trades-table th {
+            font-weight: 600;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        /* Buttons */
+        .step-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.875rem 1.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-card);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .loading-spinner {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .loading-spinner i {
+            font-size: 2rem;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .step-nav {
+                margin-bottom: 2rem;
+            }
+            
+            .step-indicator {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .step-connector {
+                display: none;
+            }
+            
+            .strategy-tabs {
+                flex-direction: column;
+            }
+            
+            .logic-builder {
+                grid-template-columns: 1fr;
+            }
+            
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Timeframe Selector Styles */
+        .timeframe-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .timeframe-container select {
+            min-width: 120px;
+        }
+
+        .max-days {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .quick-select-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-quick-select {
+            background: var(--accent-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-quick-select:hover {
+            background: var(--accent-secondary);
+        }
+
+        .timeframe-warning {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 6px;
+            color: #f59e0b;
+            font-size: 0.875rem;
+        }
+
+        .timeframe-warning i {
+            color: #f59e0b;
+        }
+
+        @media (max-width: 768px) {
+            .timeframe-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .quick-select-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-chart-line"></i>
+                    <h1>StockBacktester Pro</h1>
+                </div>
+                <div class="header-controls">
+                    <div class="display-selector">
+                        <button class="display-btn active" onclick="setDisplayFormat('dropdown')">Dropdown</button>
+                        <button class="display-btn" onclick="setDisplayFormat('cards')">Cards</button>
+                    </div>
+                    <div class="theme-selector">
+                        <button class="theme-btn active" onclick="setTheme('light')">Light</button>
+                        <button class="theme-btn" onclick="setTheme('neutral')">Neutral</button>
+                        <button class="theme-btn" onclick="setTheme('elegant')">Elegant</button>
+                    </div>
+                    <button class="reset-btn" onclick="resetApp()">
+                        <i class="fas fa-redo"></i>
+                        Reset
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Step Navigation -->
+            <div class="step-nav">
+                <div class="step-indicator">
+                    <div class="step-item active" id="step1-indicator">
+                        <div class="step-number">1</div>
+                        <span>Select Strategy</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" id="step2-indicator">
+                        <div class="step-number">2</div>
+                        <span>Configure</span>
+                    </div>
+                    <div class="step-connector"></div>
+                    <div class="step-item" id="step3-indicator">
+                        <div class="step-number">3</div>
+                        <span>Results</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Strategy Selection -->
+            <div id="step1" class="step active">
+                <div class="step-header">
+                    <h2>Select Strategy</h2>
+                    <p>Choose between pre-built strategies or build your own</p>
+                </div>
+
+                <div class="strategy-selector">
+                    <div class="strategy-tabs">
+                        <button class="tab-btn active" onclick="switchTab('prebuilt')">
+                            <i class="fas fa-cube"></i>
+                            Pre-built Strategies
+                        </button>
+                        <button class="tab-btn" onclick="switchTab('modular')">
+                            <i class="fas fa-puzzle-piece"></i>
+                            Modular Builder
+                        </button>
+                    </div>
+
+                    <!-- Pre-built Strategies -->
+                    <div id="prebuilt-tab" class="tab-content active">
+                        <!-- Dropdown Format -->
+                        <div id="dropdown-format" class="strategy-format active">
+                            <div class="strategy-dropdown">
+                                <select id="strategy-select" onchange="updateStrategyDetails()">
+                                    <option value="">Select a strategy...</option>
+                                    <option value="supertrend">Supertrend Strategy</option>
+                                    <option value="ema_crossover">EMA/SMA Crossover Strategy</option>
+                                    <option value="multi_strategy">Multi-Strategy Backtest</option>
+                                </select>
+                            </div>
+
+                            <div id="strategy-details" class="strategy-details" style="display: none;">
+                                <div class="strategy-description" id="strategy-description"></div>
+                                <div class="strategy-params" id="strategy-params"></div>
+                            </div>
+                        </div>
+
+                        <!-- Cards Format -->
+                        <div id="cards-format" class="strategy-format">
+                            <div class="strategy-cards" id="strategy-cards">
+                                <div class="strategy-card" onclick="selectStrategyCard(this, 'supertrend')">
+                                    <h3>Supertrend Strategy</h3>
+                                    <p>Trend-following strategy using ATR-based bands. Generates buy signals when price is above the Supertrend line and sell signals when price falls below it.</p>
+                                    <div class="card-params">
+                                        <div class="param-item">
+                                            <div class="param-label">ATR Period</div>
+                                            <div class="param-value">10</div>
+                                        </div>
+                                        <div class="param-item">
+                                            <div class="param-label">Multiplier</div>
+                                            <div class="param-value">3.0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="strategy-card" onclick="selectStrategyCard(this, 'ema_crossover')">
+                                    <h3>EMA/SMA Crossover Strategy</h3>
+                                    <p>Moving average crossover strategy using EMA or SMA. Generates buy signals when fast MA crosses above slow MA and sell signals on the opposite crossover.</p>
+                                    <div class="card-params">
+                                        <div class="param-item">
+                                            <div class="param-label">Short Period</div>
+                                            <div class="param-value">12</div>
+                                        </div>
+                                        <div class="param-item">
+                                            <div class="param-label">Long Period</div>
+                                            <div class="param-value">26</div>
+                                        </div>
+                                        <div class="param-item">
+                                            <div class="param-label">MA Type</div>
+                                            <div class="param-value">EMA</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="strategy-card" onclick="selectStrategyCard(this, 'multi_strategy')">
+                                    <h3>Multi-Strategy Backtest</h3>
+                                    <p>Combine multiple strategies - trades execute only when ALL strategies agree on a signal. Perfect for reducing false signals and improving strategy reliability.</p>
+                                    <div class="card-params">
+                                        <div class="param-item">
+                                            <div class="param-label">Strategy Count</div>
+                                            <div class="param-value">Multiple</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="strategy-details-cards" class="strategy-details" style="display: none;">
+                                <div class="strategy-description" id="strategy-description-cards"></div>
+                                <div class="strategy-params" id="strategy-params-cards"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modular Builder -->
+                    <div id="modular-tab" class="tab-content">
+                        <div class="modular-builder">
+                            <!-- Indicators Section -->
+                            <div class="indicators-section">
+                                <h4 class="section-header" onclick="toggleSection('indicators')">
+                                    <i class="fas fa-chart-line"></i> Indicators 
+                                    <i class="fas fa-chevron-down" id="indicators-arrow"></i>
+                                </h4>
+                                <div class="section-content expanded" id="indicators-content">
+                                    <div id="selectedIndicators">
+                                        <!-- Selected indicators will be added here -->
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="addIndicator()">
+                                        <i class="fas fa-plus"></i> Add Indicator
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Buy Rules Section -->
+                            <div class="rules-section">
+                                <h4 class="section-header" onclick="toggleSection('buyRules')">
+                                    <i class="fas fa-arrow-up"></i> Buy Rules
+                                    <i class="fas fa-chevron-down" id="buyRules-arrow"></i>
+                                </h4>
+                                <div class="section-content expanded" id="buyRules-content">
+                                    <div id="buyRules">
+                                        <!-- Buy rules will be added here -->
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="addBuyRule()">
+                                        <i class="fas fa-plus"></i> Add Buy Rule
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Sell Rules Section -->
+                            <div class="rules-section">
+                                <h4 class="section-header" onclick="toggleSection('sellRules')">
+                                    <i class="fas fa-arrow-down"></i> Sell Rules
+                                    <i class="fas fa-chevron-down" id="sellRules-arrow"></i>
+                                </h4>
+                                <div class="section-content expanded" id="sellRules-content">
+                                    <div id="sellRules">
+                                        <!-- Sell rules will be added here -->
+                                    </div>
+                                    <button class="btn btn-secondary" onclick="addSellRule()">
+                                        <i class="fas fa-plus"></i> Add Sell Rule
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button class="btn btn-primary" onclick="nextStep()" id="next-btn" disabled>
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Configuration -->
+            <div id="step2" class="step">
+                <div class="step-header">
+                    <h2>Configure Backtest</h2>
+                    <p>Set your trading parameters and date range</p>
+                </div>
+
+                <div class="config-grid">
+                    <div class="form-group">
+                        <label>Stock Symbol</label>
+                        <input type="text" id="symbol" placeholder="AAPL" value="AAPL">
+                        <small style="color: var(--text-secondary); font-size: 0.8rem;">Try: AAPL, MSFT, GOOGL, TSLA, AMZN</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Timeframe</label>
+                        <div class="timeframe-container">
+                            <select id="timeframe-select">
+                                <option value="1d">1 Day</option>
+                                <option value="1m">1 Minute</option>
+                                <option value="3m">3 Minutes</option>
+                                <option value="5m">5 Minutes</option>
+                                <option value="15m">15 Minutes</option>
+                                <option value="30m">30 Minutes</option>
+                                <option value="60m">1 Hour</option>
+                                <option value="1wk">1 Week</option>
+                                <option value="1mo">1 Month</option>
+                            </select>
+                            <span id="max-days-display" class="max-days">Max: Unlimited</span>
+                            <div id="quick-select-buttons" class="quick-select-buttons" style="display: none;">
+                                <button type="button" class="btn-quick-select" data-days="7">Last 7d</button>
+                                <button type="button" class="btn-quick-select" data-days="30">Last 30d</button>
+                                <button type="button" class="btn-quick-select" data-days="60">Last 60d</button>
+                            </div>
+                        </div>
+                        <div id="timeframe-warning" class="timeframe-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="warning-text"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="start-date" value="2023-01-01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="end-date" value="2024-01-01">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Initial Capital ($)</label>
+                        <input type="number" id="initial-capital" value="100000" min="1000">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Strategy Type</label>
+                        <select id="strategy-type">
+                            <option value="long_only">Long Only</option>
+                            <option value="long_short">Long-Short</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button class="btn btn-secondary" onclick="prevStep()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button class="btn btn-primary" onclick="runBacktest()">
+                        <i class="fas fa-play"></i> Run Backtest
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Results -->
+            <div id="step3" class="step">
+                <div class="step-header">
+                    <h2>Backtest Results</h2>
+                    <p>Analyze your strategy performance</p>
+                </div>
+
+                <div class="results-container">
+                    <div class="performance-summary">
+                        <div class="metric-card">
+                            <div class="metric-value" id="total-return">-</div>
+                            <div class="metric-label">Total Return</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="sharpe-ratio">-</div>
+                            <div class="metric-label">Sharpe Ratio</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="max-drawdown">-</div>
+                            <div class="metric-label">Max Drawdown</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="win-rate">-</div>
+                            <div class="metric-label">Win Rate</div>
+                        </div>
+                    </div>
+
+                    <div class="charts-section">
+                        <h3>Equity Curve</h3>
+                        <div class="chart-container">
+                            <canvas id="equity-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="trades-section">
+                        <h3>Trade History</h3>
+                        <div class="trades-table-container">
+                            <table class="trades-table" id="trades-table">
+                                <thead>
+                                    <tr>
+                                        <th>Trade #</th>
+                                        <th>Entry Date</th>
+                                        <th>Exit Date</th>
+                                        <th>Entry Price</th>
+                                        <th>Exit Price</th>
+                                        <th>Action</th>
+                                        <th>P&L</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trades-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button class="btn btn-secondary" onclick="prevStep()">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button class="btn btn-primary" onclick="resetApp()">
+                        <i class="fas fa-redo"></i> New Backtest
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p id="loading-text">Running backtest...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let currentTheme = 'light';
+        let currentDisplayFormat = 'dropdown';
+        let equityChart = null;
+        let selectedStrategy = null;
+        let selectedIndicators = [];
+        let buyRuleCounter = 0;
+        let sellRuleCounter = 0;
+
+        // Available indicators for modular builder
+        const availableIndicators = {
+            rsi: {
+                name: 'RSI',
+                description: 'Relative Strength Index - Momentum oscillator',
+                parameters: [
+                    { name: 'period', label: 'Period', type: 'number', default: 14, min: 1, max: 100 }
+                ]
+            },
+            macd: {
+                name: 'MACD',
+                description: 'Moving Average Convergence Divergence',
+                parameters: [
+                    { name: 'fastPeriod', label: 'Fast Period', type: 'number', default: 12, min: 1, max: 100 },
+                    { name: 'slowPeriod', label: 'Slow Period', type: 'number', default: 26, min: 1, max: 100 },
+                    { name: 'signalPeriod', label: 'Signal Period', type: 'number', default: 9, min: 1, max: 100 }
+                ]
+            }
+        };
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStepIndicator();
+            updateNextButton();
+            
+            // Initialize timeframe functionality
+            initializeTimeframeSelector();
+            
+            // Add event delegation for condition remove buttons
+            document.addEventListener('click', function(event) {
+                if (event.target.closest('.remove-condition-btn')) {
+                    const button = event.target.closest('.remove-condition-btn');
+                    removeCondition(button);
+                }
+            });
+        });
+
+        // Timeframe management
+        const timeframeLimits = {
+            '1m': 7,
+            '3m': 60,
+            '5m': 60,
+            '15m': 60,
+            '30m': 60,
+            '60m': 730,
+            '1d': null, // Unlimited
+            '1wk': null, // Unlimited
+            '1mo': null  // Unlimited
+        };
+
+        function initializeTimeframeSelector() {
+            const timeframeSelect = document.getElementById('timeframe-select');
+            const maxDaysDisplay = document.getElementById('max-days-display');
+            const quickSelectButtons = document.getElementById('quick-select-buttons');
+            const warningDiv = document.getElementById('timeframe-warning');
+            
+            // Load saved timeframe from localStorage
+            const savedTimeframe = localStorage.getItem('selectedTimeframe') || '1d';
+            timeframeSelect.value = savedTimeframe;
+            
+            // Initialize display
+            updateTimeframeDisplay();
+            
+            // Add event listeners
+            timeframeSelect.addEventListener('change', function() {
+                const selectedTimeframe = this.value;
+                localStorage.setItem('selectedTimeframe', selectedTimeframe);
+                updateTimeframeDisplay();
+                validateAndAdjustDates();
+            });
+            
+            // Add quick select button listeners
+            quickSelectButtons.addEventListener('click', function(event) {
+                if (event.target.classList.contains('btn-quick-select')) {
+                    const days = parseInt(event.target.dataset.days);
+                    setDateRange(days);
+                }
+            });
+        }
+
+        function updateTimeframeDisplay() {
+            const timeframeSelect = document.getElementById('timeframe-select');
+            const maxDaysDisplay = document.getElementById('max-days-display');
+            const quickSelectButtons = document.getElementById('quick-select-buttons');
+            const selectedTimeframe = timeframeSelect.value;
+            const maxDays = timeframeLimits[selectedTimeframe];
+            
+            // Update max days display
+            if (maxDays === null) {
+                maxDaysDisplay.textContent = 'Max: Unlimited';
+                quickSelectButtons.style.display = 'none';
+            } else {
+                maxDaysDisplay.textContent = `Max: ${maxDays} days`;
+                quickSelectButtons.style.display = 'flex';
+                
+                // Update quick select buttons based on timeframe
+                const buttons = quickSelectButtons.querySelectorAll('.btn-quick-select');
+                buttons.forEach(btn => {
+                    const btnDays = parseInt(btn.dataset.days);
+                    btn.style.display = btnDays <= maxDays ? 'block' : 'none';
+                });
+            }
+        }
+
+        function validateAndAdjustDates() {
+            const timeframeSelect = document.getElementById('timeframe-select');
+            const startDateInput = document.getElementById('start-date');
+            const endDateInput = document.getElementById('end-date');
+            const warningDiv = document.getElementById('timeframe-warning');
+            const warningText = document.getElementById('warning-text');
+            
+            const selectedTimeframe = timeframeSelect.value;
+            const maxDays = timeframeLimits[selectedTimeframe];
+            
+            if (maxDays === null) {
+                // Unlimited timeframe - hide warning
+                warningDiv.style.display = 'none';
+                return;
+            }
+            
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff > maxDays) {
+                // Show warning and auto-adjust dates
+                warningText.textContent = `Date range adjusted to ${maxDays} days for ${selectedTimeframe} timeframe.`;
+                warningDiv.style.display = 'flex';
+                
+                // Auto-adjust to max allowed days
+                const newStartDate = new Date(endDate);
+                newStartDate.setDate(newStartDate.getDate() - maxDays);
+                
+                startDateInput.value = newStartDate.toISOString().split('T')[0];
+            } else {
+                warningDiv.style.display = 'none';
+            }
+        }
+
+        function setDateRange(days) {
+            const endDateInput = document.getElementById('end-date');
+            const startDateInput = document.getElementById('start-date');
+            
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            
+            endDateInput.value = endDate.toISOString().split('T')[0];
+            startDateInput.value = startDate.toISOString().split('T')[0];
+            
+            // Validate the new date range
+            validateAndAdjustDates();
+        }
+
+        // Theme management
+        function setTheme(theme) {
+            currentTheme = theme;
+            document.body.className = '';
+            
+            if (theme === 'neutral') {
+                document.body.classList.add('theme-neutral');
+            } else if (theme === 'elegant') {
+                document.body.classList.add('theme-elegant');
+            }
+            
+            // Update theme buttons
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Display format management
+        function setDisplayFormat(format) {
+            currentDisplayFormat = format;
+            
+            // Update display format buttons
+            document.querySelectorAll('.display-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Switch between dropdown and cards format
+            document.querySelectorAll('.strategy-format').forEach(formatDiv => {
+                formatDiv.classList.remove('active');
+            });
+            
+            if (format === 'dropdown') {
+                document.getElementById('dropdown-format').classList.add('active');
+            } else if (format === 'cards') {
+                document.getElementById('cards-format').classList.add('active');
+            }
+            
+            // Reset strategy selection when switching formats
+            selectedStrategy = null;
+            updateNextButton();
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Reset strategy selection when switching tabs
+            if (tabName === 'prebuilt') {
+                document.getElementById('strategy-select').value = '';
+                document.getElementById('strategy-details').style.display = 'none';
+                selectedStrategy = null;
+            }
+            
+            updateNextButton();
+        }
+
+        // Strategy card selection
+        function selectStrategyCard(card, strategy) {
+            // Remove selection from all cards
+            document.querySelectorAll('.strategy-card').forEach(c => {
+                c.classList.remove('selected');
+            });
+            
+            // Select the clicked card
+            card.classList.add('selected');
+            
+            // Set the selected strategy
+            selectedStrategy = strategy;
+            
+            // Show strategy details
+            updateStrategyDetailsCards(strategy);
+            
+            // Update next button
+            updateNextButton();
+        }
+
+        // Strategy selection
+        function updateStrategyDetails() {
+            const strategySelect = document.getElementById('strategy-select');
+            const strategyDetails = document.getElementById('strategy-details');
+            const strategyDescription = document.getElementById('strategy-description');
+            const strategyParams = document.getElementById('strategy-params');
+            
+            selectedStrategy = strategySelect.value;
+            
+            if (!selectedStrategy) {
+                strategyDetails.style.display = 'none';
+                updateNextButton();
+                return;
+            }
+            
+            strategyDetails.style.display = 'block';
+            
+            // Strategy descriptions and parameters
+            const strategies = {
+                'supertrend': {
+                    description: 'Trend-following strategy using ATR-based bands. Generates buy signals when price is above the Supertrend line and sell signals when price falls below it.',
+                    params: [
+                        { name: 'period', label: 'ATR Period', type: 'number', value: 10, min: 1, max: 50 },
+                        { name: 'multiplier', label: 'ATR Multiplier', type: 'number', value: 3.0, min: 0.1, max: 10, step: 0.1 }
+                    ]
+                },
+                'ema_crossover': {
+                    description: 'Moving average crossover strategy using EMA or SMA. Generates buy signals when fast MA crosses above slow MA and sell signals on the opposite crossover.',
+                    params: [
+                        { name: 'shortPeriod', label: 'Short Period', type: 'number', value: 12, min: 1, max: 100 },
+                        { name: 'longPeriod', label: 'Long Period', type: 'number', value: 26, min: 1, max: 200 },
+                        { name: 'maType', label: 'MA Type', type: 'select', options: ['ema', 'sma'], value: 'ema' }
+                    ]
+                },
+                'multi_strategy': {
+                    description: 'Combine multiple strategies - trades execute only when ALL strategies agree on a signal. Perfect for reducing false signals and improving strategy reliability.',
+                    params: []
+                }
+            };
+            
+            const strategy = strategies[selectedStrategy];
+            strategyDescription.textContent = strategy.description;
+            
+            // Generate parameter inputs
+            strategyParams.innerHTML = '';
+            strategy.params.forEach(param => {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = param.label;
+                formGroup.appendChild(label);
+                
+                if (param.type === 'select') {
+                    const select = document.createElement('select');
+                    select.id = param.name;
+                    param.options.forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option;
+                        optionElement.textContent = option.toUpperCase();
+                        if (option === param.value) optionElement.selected = true;
+                        select.appendChild(optionElement);
+                    });
+                    formGroup.appendChild(select);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = param.type;
+                    input.id = param.name;
+                    input.value = param.value;
+                    if (param.min) input.min = param.min;
+                    if (param.max) input.max = param.max;
+                    if (param.step) input.step = param.step;
+                    formGroup.appendChild(input);
+                }
+                
+                strategyParams.appendChild(formGroup);
+            });
+            
+            updateNextButton();
+        }
+
+        function updateStrategyDetailsCards(strategy) {
+            const strategyDetails = document.getElementById('strategy-details-cards');
+            const strategyDescription = document.getElementById('strategy-description-cards');
+            const strategyParams = document.getElementById('strategy-params-cards');
+            
+            if (!strategy) {
+                strategyDetails.style.display = 'none';
+                return;
+            }
+            
+            strategyDetails.style.display = 'block';
+            
+            // Strategy descriptions and parameters
+            const strategies = {
+                'supertrend': {
+                    description: 'Trend-following strategy using ATR-based bands. Generates buy signals when price is above the Supertrend line and sell signals when price falls below it.',
+                    params: [
+                        { name: 'period', label: 'ATR Period', type: 'number', value: 10, min: 1, max: 50 },
+                        { name: 'multiplier', label: 'ATR Multiplier', type: 'number', value: 3.0, min: 0.1, max: 10, step: 0.1 }
+                    ]
+                },
+                'ema_crossover': {
+                    description: 'Moving average crossover strategy using EMA or SMA. Generates buy signals when fast MA crosses above slow MA and sell signals on the opposite crossover.',
+                    params: [
+                        { name: 'shortPeriod', label: 'Short Period', type: 'number', value: 12, min: 1, max: 100 },
+                        { name: 'longPeriod', label: 'Long Period', type: 'number', value: 26, min: 1, max: 200 },
+                        { name: 'maType', label: 'MA Type', type: 'select', options: ['ema', 'sma'], value: 'ema' }
+                    ]
+                },
+                'multi_strategy': {
+                    description: 'Combine multiple strategies - trades execute only when ALL strategies agree on a signal. Perfect for reducing false signals and improving strategy reliability.',
+                    params: []
+                }
+            };
+            
+            const strategyData = strategies[strategy];
+            strategyDescription.textContent = strategyData.description;
+            
+            // Generate parameter inputs
+            strategyParams.innerHTML = '';
+            strategyData.params.forEach(param => {
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                
+                const label = document.createElement('label');
+                label.textContent = param.label;
+                formGroup.appendChild(label);
+                
+                if (param.type === 'select') {
+                    const select = document.createElement('select');
+                    select.id = param.name + '_cards';
+                    param.options.forEach(option => {
+                        const optionElement = document.createElement('option');
+                        optionElement.value = option;
+                        optionElement.textContent = option.toUpperCase();
+                        if (option === param.value) optionElement.selected = true;
+                        select.appendChild(optionElement);
+                    });
+                    formGroup.appendChild(select);
+                } else {
+                    const input = document.createElement('input');
+                    input.type = param.type;
+                    input.id = param.name + '_cards';
+                    input.value = param.value;
+                    if (param.min) input.min = param.min;
+                    if (param.max) input.max = param.max;
+                    if (param.step) input.step = param.step;
+                    formGroup.appendChild(input);
+                }
+                
+                strategyParams.appendChild(formGroup);
+            });
+        }
+
+        // Modular builder functions
+        function addIndicator() {
+            const indicatorSelect = document.createElement('select');
+            indicatorSelect.className = 'indicator-select';
+            indicatorSelect.innerHTML = '<option value="">Select Indicator...</option>';
+            
+            Object.keys(availableIndicators).forEach(key => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = availableIndicators[key].name;
+                indicatorSelect.appendChild(option);
+            });
+            
+            indicatorSelect.addEventListener('change', function() {
+                if (this.value) {
+                    createIndicatorCard(this.value);
+                    this.remove();
+                }
+            });
+            
+            document.getElementById('selectedIndicators').appendChild(indicatorSelect);
+        }
+
+        function createIndicatorCard(indicatorKey) {
+            const indicator = availableIndicators[indicatorKey];
+            const card = document.createElement('div');
+            card.className = 'indicator-card';
+            card.innerHTML = `
+                <button class="remove-btn" onclick="removeIndicator(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h5>${indicator.name}</h5>
+                <p>${indicator.description}</p>
+                <div class="indicator-params">
+                    ${indicator.parameters.map(param => `
+                        <div class="form-group">
+                            <label>${param.label}</label>
+                            <input type="${param.type}" 
+                                   value="${param.default}" 
+                                   min="${param.min}" 
+                                   max="${param.max}" 
+                                   step="${param.step || 1}"
+                                   data-param="${param.name}">
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            document.getElementById('selectedIndicators').appendChild(card);
+            selectedIndicators.push(indicatorKey);
+            updateNextButton();
+        }
+
+        function removeIndicator(button) {
+            const card = button.parentElement;
+            const indicatorName = card.querySelector('h5').textContent;
+            const indicatorKey = Object.keys(availableIndicators).find(key => 
+                availableIndicators[key].name === indicatorName
+            );
+            
+            selectedIndicators = selectedIndicators.filter(i => i !== indicatorKey);
+            card.remove();
+            updateNextButton();
+        }
+
+        function addBuyRule() {
+            buyRuleCounter++;
+            
+            // Add logic selector between rules if not the first rule
+            if (buyRuleCounter > 1) {
+                const logicDiv = document.createElement('div');
+                logicDiv.className = 'rule-logic-between';
+                logicDiv.innerHTML = `
+                    <label>Combine with previous rule:</label>
+                    <select class="rule-logic-between-select">
+                        <option value="AND">AND</option>
+                        <option value="OR">OR</option>
+                    </select>
+                `;
+                document.getElementById('buyRules').appendChild(logicDiv);
+            }
+            
+            const ruleCard = document.createElement('div');
+            ruleCard.className = 'rule-card';
+            ruleCard.innerHTML = `
+                <button class="remove-btn" onclick="removeBuyRule(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h5>Buy Rule ${buyRuleCounter}</h5>
+                <div class="rule-conditions">
+                    ${createConditionGroup()}
+                </div>
+                <button class="add-condition-btn" onclick="addCondition(this, 'buy')">
+                    <i class="fas fa-plus"></i> Add Condition
+                </button>
+            `;
+            
+            document.getElementById('buyRules').appendChild(ruleCard);
+            updateNextButton();
+        }
+
+        function addSellRule() {
+            sellRuleCounter++;
+            
+            // Add logic selector between rules if not the first rule
+            if (sellRuleCounter > 1) {
+                const logicDiv = document.createElement('div');
+                logicDiv.className = 'rule-logic-between';
+                logicDiv.innerHTML = `
+                    <label>Combine with previous rule:</label>
+                    <select class="rule-logic-between-select">
+                        <option value="AND">AND</option>
+                        <option value="OR">OR</option>
+                    </select>
+                `;
+                document.getElementById('sellRules').appendChild(logicDiv);
+            }
+            
+            const ruleCard = document.createElement('div');
+            ruleCard.className = 'rule-card';
+            ruleCard.innerHTML = `
+                <button class="remove-btn" onclick="removeSellRule(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h5>Sell Rule ${sellRuleCounter}</h5>
+                <div class="rule-conditions">
+                    ${createConditionGroup()}
+                </div>
+                <button class="add-condition-btn" onclick="addCondition(this, 'sell')">
+                    <i class="fas fa-plus"></i> Add Condition
+                </button>
+            `;
+            
+            document.getElementById('sellRules').appendChild(ruleCard);
+            updateNextButton();
+        }
+
+        function createConditionGroup() {
+            // Get all available indicators for the dropdowns with proper column mapping
+            const indicatorOptions = Object.keys(availableIndicators).map(key => {
+                const indicatorData = availableIndicators[key];
+                return `<option value="${key}">${indicatorData.name}</option>`;
+            }).join('');
+            
+            return `
+                <div class="condition-group">
+                    <div>
+                        <label>Column</label>
+                        <select class="condition-column">
+                            <option value="">Select...</option>
+                            ${indicatorOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label>Operator</label>
+                        <select class="condition-operator">
+                            <option value=">">&gt;</option>
+                            <option value="<">&lt;</option>
+                            <option value=">=">&gt;=</option>
+                            <option value="<=">&lt;=</option>
+                            <option value="==">=</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Value</label>
+                        <input type="number" class="condition-value" step="0.01" placeholder="Value">
+                    </div>
+                    <div>
+                        <label>Compare With</label>
+                        <select class="condition-compare">
+                            <option value="value">Fixed Value</option>
+                            ${indicatorOptions}
+                        </select>
+                    </div>
+                    <button type="button" class="remove-condition-btn" onclick="removeCondition(this)" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        function addCondition(button, ruleType) {
+            const ruleCard = button.closest('.rule-card');
+            const conditionsContainer = ruleCard.querySelector('.rule-conditions');
+            
+            // Create the new condition group
+            const newCondition = document.createElement('div');
+            newCondition.innerHTML = createConditionGroup();
+            
+            // Append the first child (the actual condition-group div)
+            const conditionGroup = newCondition.firstElementChild;
+            conditionsContainer.appendChild(conditionGroup);
+            
+            console.log('Added new condition. Total conditions now:', conditionsContainer.querySelectorAll('.condition-group').length);
+            
+            // Show remove button for all conditions except the first one
+            const conditions = conditionsContainer.querySelectorAll('.condition-group');
+            conditions.forEach((condition, index) => {
+                const removeBtn = condition.querySelector('.remove-condition-btn');
+                if (removeBtn) {
+                    if (index === 0) {
+                        removeBtn.style.display = 'none';
+                    } else {
+                        removeBtn.style.display = 'block';
+                    }
+                }
+            });
+        }
+
+        function removeCondition(button) {
+            console.log('removeCondition called', button);
+            
+            // Prevent event bubbling
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            const conditionGroup = button.closest('.condition-group');
+            if (!conditionGroup) {
+                console.error('Could not find condition-group parent');
+                return;
+            }
+            
+            const conditionsContainer = conditionGroup.parentElement;
+            if (!conditionsContainer) {
+                console.error('Could not find conditions container');
+                return;
+            }
+            
+            console.log('conditionGroup:', conditionGroup);
+            console.log('conditionsContainer:', conditionsContainer);
+            
+            // Get all condition groups within this specific rule
+            const allConditions = conditionsContainer.querySelectorAll('.condition-group');
+            console.log('total conditions found:', allConditions.length);
+            
+            // Don't remove if it's the only condition
+            if (allConditions.length > 1) {
+                console.log('Removing condition group');
+                conditionGroup.remove();
+                
+                // Update remove buttons visibility for remaining conditions
+                const remainingConditions = conditionsContainer.querySelectorAll('.condition-group');
+                remainingConditions.forEach((condition, index) => {
+                    const removeBtn = condition.querySelector('.remove-condition-btn');
+                    if (removeBtn) {
+                        if (index === 0) {
+                            removeBtn.style.display = 'none';
+                        } else {
+                            removeBtn.style.display = 'block';
+                        }
+                    }
+                });
+                console.log('Condition removed successfully. Remaining conditions:', remainingConditions.length);
+            } else {
+                console.log('Cannot remove - only one condition left');
+            }
+        }
+
+        function removeBuyRule(button) {
+            const ruleCard = button.closest('.rule-card');
+            const buyRulesContainer = document.getElementById('buyRules');
+            
+            // Remove the rule card
+            ruleCard.remove();
+            buyRuleCounter--;
+            
+            // Remove ALL logic selectors and recreate them properly
+            const allLogicSelectors = buyRulesContainer.querySelectorAll('.rule-logic-between');
+            allLogicSelectors.forEach(selector => selector.remove());
+            
+            // Renumber all remaining rule cards
+            const remainingRuleCards = buyRulesContainer.querySelectorAll('.rule-card');
+            remainingRuleCards.forEach((card, index) => {
+                const title = card.querySelector('h5');
+                title.textContent = `Buy Rule ${index + 1}`;
+            });
+            
+            // Add logic selectors back between rules (if more than one rule)
+            if (remainingRuleCards.length > 1) {
+                for (let i = 0; i < remainingRuleCards.length - 1; i++) {
+                    const logicDiv = document.createElement('div');
+                    logicDiv.className = 'rule-logic-between';
+                    logicDiv.innerHTML = `
+                        <label>Combine with previous rule:</label>
+                        <select class="rule-logic-between-select">
+                            <option value="AND">AND</option>
+                            <option value="OR">OR</option>
+                        </select>
+                    `;
+                    
+                    // Insert after the current rule card
+                    remainingRuleCards[i].after(logicDiv);
+                }
+            }
+            
+            // Reset counter if no rules left
+            if (buyRuleCounter === 0) {
+                buyRuleCounter = 0;
+            }
+            
+            updateNextButton();
+        }
+
+        function removeSellRule(button) {
+            const ruleCard = button.closest('.rule-card');
+            const sellRulesContainer = document.getElementById('sellRules');
+            
+            // Remove the rule card
+            ruleCard.remove();
+            sellRuleCounter--;
+            
+            // Remove ALL logic selectors and recreate them properly
+            const allLogicSelectors = sellRulesContainer.querySelectorAll('.rule-logic-between');
+            allLogicSelectors.forEach(selector => selector.remove());
+            
+            // Renumber all remaining rule cards
+            const remainingRuleCards = sellRulesContainer.querySelectorAll('.rule-card');
+            remainingRuleCards.forEach((card, index) => {
+                const title = card.querySelector('h5');
+                title.textContent = `Sell Rule ${index + 1}`;
+            });
+            
+            // Add logic selectors back between rules (if more than one rule)
+            if (remainingRuleCards.length > 1) {
+                for (let i = 0; i < remainingRuleCards.length - 1; i++) {
+                    const logicDiv = document.createElement('div');
+                    logicDiv.className = 'rule-logic-between';
+                    logicDiv.innerHTML = `
+                        <label>Combine with previous rule:</label>
+                        <select class="rule-logic-between-select">
+                            <option value="AND">AND</option>
+                            <option value="OR">OR</option>
+                        </select>
+                    `;
+                    
+                    // Insert after the current rule card
+                    remainingRuleCards[i].after(logicDiv);
+                }
+            }
+            
+            // Reset counter if no rules left
+            if (sellRuleCounter === 0) {
+                sellRuleCounter = 0;
+            }
+            
+            updateNextButton();
+        }
+
+        function toggleSection(sectionName) {
+            const content = document.getElementById(sectionName + '-content');
+            const arrow = document.getElementById(sectionName + '-arrow');
+            
+            content.classList.toggle('expanded');
+            
+            if (content.classList.contains('expanded')) {
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                arrow.style.transform = 'rotate(-90deg)';
+            }
+        }
+
+        function toggleIndicator(card, indicator) {
+            card.classList.toggle('selected');
+            if (card.classList.contains('selected')) {
+                selectedIndicators.push(indicator);
+            } else {
+                selectedIndicators = selectedIndicators.filter(i => i !== indicator);
+            }
+            updateNextButton();
+        }
+
+        // Step navigation
+        function nextStep() {
+            if (currentStep < 3) {
+                currentStep++;
+                updateStepDisplay();
+                updateStepIndicator();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateStepDisplay();
+                updateStepIndicator();
+            }
+        }
+
+        function updateStepDisplay() {
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+            });
+            document.getElementById('step' + currentStep).classList.add('active');
+        }
+
+        function updateStepIndicator() {
+            document.querySelectorAll('.step-item').forEach((item, index) => {
+                item.classList.remove('active', 'completed');
+                if (index + 1 === currentStep) {
+                    item.classList.add('active');
+                } else if (index + 1 < currentStep) {
+                    item.classList.add('completed');
+                }
+            });
+        }
+
+        function updateNextButton() {
+            const nextBtn = document.getElementById('next-btn');
+            let canProceed = false;
+            
+            if (currentStep === 1) {
+                const activeTab = document.querySelector('.tab-btn.active').textContent.trim();
+                if (activeTab.includes('Pre-built')) {
+                    canProceed = selectedStrategy !== null;
+                } else {
+                    canProceed = selectedIndicators.length > 0;
+                }
+            } else {
+                canProceed = true;
+            }
+            
+            nextBtn.disabled = !canProceed;
+        }
+
+        function buildModularStrategyConfig() {
+            console.log('Building modular strategy config...');
+            
+            // Collect selected indicators and their parameters
+            const indicators = [];
+            const indicatorCards = document.querySelectorAll('.indicator-card');
+            console.log('Found indicator cards:', indicatorCards.length);
+            
+            indicatorCards.forEach((card, index) => {
+                const indicatorName = card.querySelector('h5').textContent;
+                const indicatorKey = Object.keys(availableIndicators).find(key => 
+                    availableIndicators[key].name === indicatorName
+                );
+                
+                console.log(`Indicator ${index + 1}:`, { name: indicatorName, key: indicatorKey });
+                
+                const params = {};
+                card.querySelectorAll('input[data-param]').forEach(input => {
+                    params[input.dataset.param] = parseFloat(input.value);
+                });
+                
+                console.log(`Indicator ${index + 1} params:`, params);
+                
+                indicators.push({ 
+                    name: indicatorKey, 
+                    parameters: params 
+                });
+            });
+
+            // Collect buy rules and conditions
+            const buyRules = [];
+            const buyRuleCards = document.querySelectorAll('#buyRules .rule-card');
+            console.log('Found buy rule cards:', buyRuleCards.length);
+            
+            buyRuleCards.forEach((ruleCard, ruleIndex) => {
+                const conditions = [];
+                const conditionGroups = ruleCard.querySelectorAll('.condition-group');
+                console.log(`Buy Rule ${ruleIndex + 1} has ${conditionGroups.length} conditions`);
+                
+                conditionGroups.forEach((conditionGroup, condIndex) => {
+                    const columnKey = conditionGroup.querySelector('.condition-column').value;
+                    const operator = conditionGroup.querySelector('.condition-operator').value;
+                    const value = conditionGroup.querySelector('.condition-value').value;
+                    const compareWithKey = conditionGroup.querySelector('.condition-compare').value;
+                    
+                    // Map indicator keys to actual column names
+                    const column = columnKey === 'rsi' ? 'RSI' : 
+                                  columnKey === 'macd' ? 'MACD' : 
+                                  columnKey === 'macd_signal' ? 'MACD_Signal' :
+                                  columnKey === 'macd_histogram' ? 'MACD_Histogram' :
+                                  columnKey;
+                    
+                    const compareWith = compareWithKey === 'value' ? 'value' :
+                                       compareWithKey === 'rsi' ? 'RSI' :
+                                       compareWithKey === 'macd' ? 'MACD' :
+                                       compareWithKey === 'macd_signal' ? 'MACD_Signal' :
+                                       compareWithKey === 'macd_histogram' ? 'MACD_Histogram' :
+                                       compareWithKey;
+                    
+                    console.log(`Buy Rule ${ruleIndex + 1}, Condition ${condIndex + 1}:`, {
+                        columnKey, column, operator, value, compareWithKey, compareWith
+                    });
+                    
+                    if (column && operator && value) {
+                        conditions.push({
+                            column: column,
+                            operator: operator,
+                            value: parseFloat(value),
+                            compareWith: compareWith
+                        });
+                    }
+                });
+                
+                if (conditions.length > 0) {
+                    buyRules.push({
+                        conditions: conditions,
+                        logic: 'AND' // Default to AND for conditions within a rule
+                    });
+                }
+            });
+
+            // Collect sell rules and conditions
+            const sellRules = [];
+            const sellRuleCards = document.querySelectorAll('#sellRules .rule-card');
+            console.log('Found sell rule cards:', sellRuleCards.length);
+            
+            sellRuleCards.forEach((ruleCard, ruleIndex) => {
+                const conditions = [];
+                const conditionGroups = ruleCard.querySelectorAll('.condition-group');
+                console.log(`Sell Rule ${ruleIndex + 1} has ${conditionGroups.length} conditions`);
+                
+                conditionGroups.forEach((conditionGroup, condIndex) => {
+                    const columnKey = conditionGroup.querySelector('.condition-column').value;
+                    const operator = conditionGroup.querySelector('.condition-operator').value;
+                    const value = conditionGroup.querySelector('.condition-value').value;
+                    const compareWithKey = conditionGroup.querySelector('.condition-compare').value;
+                    
+                    // Map indicator keys to actual column names
+                    const column = columnKey === 'rsi' ? 'RSI' : 
+                                  columnKey === 'macd' ? 'MACD' : 
+                                  columnKey === 'macd_signal' ? 'MACD_Signal' :
+                                  columnKey === 'macd_histogram' ? 'MACD_Histogram' :
+                                  columnKey;
+                    
+                    const compareWith = compareWithKey === 'value' ? 'value' :
+                                       compareWithKey === 'rsi' ? 'RSI' :
+                                       compareWithKey === 'macd' ? 'MACD' :
+                                       compareWithKey === 'macd_signal' ? 'MACD_Signal' :
+                                       compareWithKey === 'macd_histogram' ? 'MACD_Histogram' :
+                                       compareWithKey;
+                    
+                    console.log(`Sell Rule ${ruleIndex + 1}, Condition ${condIndex + 1}:`, {
+                        columnKey, column, operator, value, compareWithKey, compareWith
+                    });
+                    
+                    if (column && operator && value) {
+                        conditions.push({
+                            column: column,
+                            operator: operator,
+                            value: parseFloat(value),
+                            compareWith: compareWith
+                        });
+                    }
+                });
+                
+                if (conditions.length > 0) {
+                    sellRules.push({
+                        conditions: conditions,
+                        logic: 'AND' // Default to AND for conditions within a rule
+                    });
+                }
+            });
+
+            // Collect rule logic between rules
+            const buyRuleLogic = [];
+            document.querySelectorAll('#buyRules .rule-logic-between-select').forEach(select => {
+                buyRuleLogic.push(select.value);
+            });
+
+            const sellRuleLogic = [];
+            document.querySelectorAll('#sellRules .rule-logic-between-select').forEach(select => {
+                sellRuleLogic.push(select.value);
+            });
+
+            const config = {
+                indicators: indicators,
+                buyRules: buyRules,
+                sellRules: sellRules,
+                buyRuleLogic: buyRuleLogic.length > 0 ? buyRuleLogic : ['OR'],
+                sellRuleLogic: sellRuleLogic.length > 0 ? sellRuleLogic : ['OR']
+            };
+            
+            console.log('Final modular strategy config:', config);
+            return config;
+        }
+
+        // Backtest execution
+        async function runBacktest() {
+            const loading = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            
+            loading.classList.remove('hidden');
+            loadingText.textContent = 'Running backtest...';
+            
+            try {
+                // Build request data based on current configuration
+                const requestData = buildRequestData();
+                
+                // Debug logging
+                console.log('Request Data:', requestData);
+                console.log('Active Tab:', document.querySelector('.tab-btn.active').textContent.trim());
+                
+                const response = await fetch('/api/backtest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response error:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                displayResults(data);
+                nextStep();
+                
+            } catch (error) {
+                console.error('Error running backtest:', error);
+                alert('Error running backtest: ' + error.message);
+            } finally {
+                loading.classList.add('hidden');
+            }
+        }
+
+        function buildRequestData() {
+            const baseData = {
+                symbol: document.getElementById('symbol').value,
+                startDate: document.getElementById('start-date').value,
+                endDate: document.getElementById('end-date').value,
+                initialCapital: parseFloat(document.getElementById('initial-capital').value),
+                strategyType: document.getElementById('strategy-type').value,
+                interval: document.getElementById('timeframe-select').value
+            };
+            
+            const activeTab = document.querySelector('.tab-btn.active').textContent.trim();
+            if (activeTab.includes('Modular')) {
+                const strategyConfig = buildModularStrategyConfig();
+                baseData.strategy = 'modular_strategy';
+                baseData.strategyConfig = strategyConfig;
+            } else {
+                // Add strategy-specific parameters
+                if (selectedStrategy === 'supertrend') {
+                    baseData.strategy = 'supertrend';
+                    // Check which format is active and get values accordingly
+                    if (currentDisplayFormat === 'dropdown') {
+                        baseData.period = parseInt(document.getElementById('period').value);
+                        baseData.multiplier = parseFloat(document.getElementById('multiplier').value);
+                    } else {
+                        baseData.period = parseInt(document.getElementById('period_cards').value);
+                        baseData.multiplier = parseFloat(document.getElementById('multiplier_cards').value);
+                    }
+                } else if (selectedStrategy === 'ema_crossover') {
+                    baseData.strategy = 'ema_crossover';
+                    if (currentDisplayFormat === 'dropdown') {
+                        baseData.shortPeriod = parseInt(document.getElementById('shortPeriod').value);
+                        baseData.longPeriod = parseInt(document.getElementById('longPeriod').value);
+                        baseData.maType = document.getElementById('maType').value;
+                    } else {
+                        baseData.shortPeriod = parseInt(document.getElementById('shortPeriod_cards').value);
+                        baseData.longPeriod = parseInt(document.getElementById('longPeriod_cards').value);
+                        baseData.maType = document.getElementById('maType_cards').value;
+                    }
+                } else if (selectedStrategy === 'multi_strategy') {
+                    baseData.strategy = 'multi_strategy';
+                    baseData.strategies = []; // Would need to be configured
+                }
+            }
+            
+            return baseData;
+        }
+
+        function displayResults(data) {
+            const summary = data.summary;
+            
+            // Update metrics
+            document.getElementById('total-return').textContent = formatPercentage(summary.total_return_pct);
+            document.getElementById('sharpe-ratio').textContent = formatNumber(summary.sharpe_ratio);
+            document.getElementById('max-drawdown').textContent = formatPercentage(summary.max_drawdown);
+            document.getElementById('win-rate').textContent = formatPercentage(summary.win_rate);
+            
+            // Update equity chart
+            updateEquityChart(data.equity_curve);
+            
+            // Update trade table
+            updateTradeTable(data.trades);
+        }
+
+        function updateEquityChart(equityCurve) {
+            const ctx = document.getElementById('equity-chart').getContext('2d');
+            
+            if (equityChart) {
+                equityChart.destroy();
+            }
+            
+            const labels = equityCurve.map(point => point.date);
+            const data = equityCurve.map(point => point.equity_curve);
+            
+            equityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: data,
+                        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary'),
+                        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--accent-primary') + '20',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: getComputedStyle(document.documentElement).getPropertyValue('--border-color')
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateTradeTable(trades) {
+            const tbody = document.getElementById('trades-body');
+            tbody.innerHTML = '';
+            
+            trades.forEach((trade, index) => {
+                const row = document.createElement('tr');
+                const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+                const pnlSign = trade.pnl >= 0 ? '+' : '';
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${trade.entry_date}</td>
+                    <td>${trade.exit_date}</td>
+                    <td>$${formatNumber(trade.entry_price, 2)}</td>
+                    <td>$${formatNumber(trade.exit_price, 2)}</td>
+                    <td>${trade.action}</td>
+                    <td class="${pnlClass}">${pnlSign}$${formatNumber(trade.pnl, 2)}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Utility functions
+        function formatNumber(value, decimals = 2) {
+            if (value === null || value === undefined || isNaN(value)) return '-';
+            return Number(value).toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
+        function formatPercentage(value) {
+            if (value === null || value === undefined || isNaN(value)) return '-';
+            return formatNumber(value, 2) + '%';
+        }
+
+        function resetApp() {
+            currentStep = 1;
+            selectedStrategy = null;
+            selectedIndicators = [];
+            
+            // Reset form fields
+            document.getElementById('strategy-select').value = '';
+            document.getElementById('strategy-details').style.display = 'none';
+            document.querySelectorAll('.indicator-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Reset to first tab
+            switchTab('prebuilt');
+            
+            // Update display
+            updateStepDisplay();
+            updateStepIndicator();
+            updateNextButton();
+        }
+    </script>
+</body>
+</html>

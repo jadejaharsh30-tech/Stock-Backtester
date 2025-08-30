@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockBacktester Pro - Professional Trading Strategy Backtester</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 0;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        /* Main Content Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            height: fit-content;
+        }
+
+        .control-panel h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-panel h2 i {
+            color: #60a5fa;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .date-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .date-input {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            color: #f1f5f9;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        /* Strategy Section */
+        .strategy-section {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 16px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .strategy-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #e2e8f0;
+        }
+
+        .strategy-params {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(148, 163, 184, 0.1);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.2);
+            color: #f1f5f9;
+        }
+
+        /* Results Section */
+        .results-section {
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .results-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .results-section h2 i {
+            color: #10b981;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Chart Section */
+        .chart-section {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #e2e8f0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        /* Trade History */
+        .trade-history {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .trade-history h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #e2e8f0;
+        }
+
+        .trade-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .trade-table th {
+            background: rgba(30, 41, 59, 0.8);
+            color: #cbd5e1;
+            font-weight: 600;
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .trade-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            color: #e2e8f0;
+        }
+
+        .trade-table tr:hover {
+            background: rgba(148, 163, 184, 0.05);
+        }
+
+        .positive {
+            color: #10b981;
+        }
+
+        .negative {
+            color: #ef4444;
+        }
+
+        /* Loading State */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid rgba(148, 163, 184, 0.2);
+            border-top: 3px solid #60a5fa;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .strategy-params {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
+        }
+
+        /* Multi-Strategy Components */
+        .strategy-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            position: relative;
+        }
+
+        .strategy-card .remove-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .strategy-card .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .add-strategy-btn {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            width: 100%;
+            justify-content: center;
+        }
+
+        .add-strategy-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        /* Modular Strategy Builder Styles */
+        .modular-builder {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .indicators-section,
+        .rules-section {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            margin-bottom: 0.75rem;
+        }
+
+        .indicators-section h4,
+        .rules-section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .indicators-section h4 i,
+        .rules-section h4 i {
+            color: #60a5fa;
+        }
+
+        .indicator-card,
+        .rule-card {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            position: relative;
+        }
+
+        .indicator-card h5,
+        .rule-card h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #f1f5f9;
+        }
+
+        .indicator-card .remove-btn,
+        .rule-card .remove-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-card .remove-btn:hover,
+        .rule-card .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .indicator-params {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+                 .condition-group {
+             display: grid;
+             grid-template-columns: 1fr 1fr 1fr 1fr auto;
+             gap: 0.75rem;
+             margin-bottom: 0.75rem;
+             padding: 0.75rem;
+             background: rgba(15, 23, 42, 0.4);
+             border-radius: 8px;
+             border: 1px solid rgba(148, 163, 184, 0.05);
+             align-items: end;
+         }
+
+        .condition-group label {
+            color: #cbd5e1;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+            display: block;
+            font-weight: 500;
+        }
+
+        .condition-group select, 
+        .condition-group input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: #f1f5f9;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            min-height: 36px;
+            width: 100%;
+        }
+
+        .condition-group input {
+            min-width: 80px;
+        }
+
+        .condition-group select {
+            min-width: 100px;
+        }
+
+        .rule-logic {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .rule-logic label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            font-size: 0.875rem;
+        }
+
+        .rule-logic select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            color: #f1f5f9;
+            font-size: 0.875rem;
+        }
+
+        .add-condition-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .add-condition-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .rule-logic-between {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            text-align: center;
+        }
+
+        .rule-logic-between label {
+            color: #cbd5e1;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: block;
+            font-weight: 500;
+        }
+
+        .rule-logic-between select {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: #f1f5f9;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+
+        /* Collapsible sections */
+        .section-header {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .section-header:hover {
+            color: #60a5fa;
+        }
+
+        .section-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .section-content.expanded {
+            max-height: 2000px;
+        }
+
+        /* Timeframe Selector Styles */
+        .timeframe-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .timeframe-container select {
+            min-width: 120px;
+        }
+
+        .max-days {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: 500;
+            padding: 0.25rem 0.5rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .quick-select-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-quick-select {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-quick-select:hover {
+            background: #2563eb;
+        }
+
+        .timeframe-warning {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 6px;
+            color: #f59e0b;
+            font-size: 0.875rem;
+        }
+
+        .timeframe-warning i {
+            color: #f59e0b;
+        }
+
+        @media (max-width: 768px) {
+            .timeframe-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .quick-select-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> StockBacktester Pro</h1>
+            <p>Professional Trading Strategy Backtesting Platform</p>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="main-grid">
+            <!-- Control Panel -->
+            <div class="control-panel">
+                <h2><i class="fas fa-cogs"></i> Strategy Configuration</h2>
+                
+                <!-- Basic Parameters -->
+                <div class="form-group">
+                    <label for="symbol">Stock Symbol</label>
+                    <input type="text" id="symbol" placeholder="e.g., AAPL, MSFT, GOOGL" value="AAPL">
+                </div>
+
+                <div class="form-group">
+                    <label>Timeframe</label>
+                    <div class="timeframe-container">
+                        <select id="timeframe-select">
+                            <option value="1d">1 Day</option>
+                            <option value="1m">1 Minute</option>
+                            <option value="3m">3 Minutes</option>
+                            <option value="5m">5 Minutes</option>
+                            <option value="15m">15 Minutes</option>
+                            <option value="30m">30 Minutes</option>
+                            <option value="60m">1 Hour</option>
+                            <option value="1wk">1 Week</option>
+                            <option value="1mo">1 Month</option>
+                        </select>
+                        <span id="max-days-display" class="max-days">Max: Unlimited</span>
+                        <div id="quick-select-buttons" class="quick-select-buttons" style="display: none;">
+                            <button type="button" class="btn-quick-select" data-days="7">Last 7d</button>
+                            <button type="button" class="btn-quick-select" data-days="30">Last 30d</button>
+                            <button type="button" class="btn-quick-select" data-days="60">Last 60d</button>
+                        </div>
+                    </div>
+                    <div id="timeframe-warning" class="timeframe-warning" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="warning-text"></span>
+                    </div>
+                </div>
+
+                <div class="form-group date-group">
+                    <div class="date-input">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" value="2023-01-01">
+                    </div>
+                    <div class="date-input">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" value="2024-01-01">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="initialCapital">Initial Capital ($)</label>
+                    <input type="number" id="initialCapital" placeholder="100000" value="100000">
+                </div>
+
+                <div class="form-group">
+                    <label for="strategyType">Strategy Type</label>
+                    <select id="strategyType">
+                        <option value="long_only">Long Only</option>
+                        <option value="long_short">Long-Short</option>
+                    </select>
+                </div>
+
+                <!-- Strategy Selection -->
+                <div class="strategy-section">
+                    <h3><i class="fas fa-robot"></i> Strategy Selection</h3>
+                    <div class="form-group">
+                        <label for="strategyName">Strategy</label>
+                        <select id="strategyName">
+                            <option value="supertrend">Supertrend Strategy</option>
+                            <option value="ema_crossover">EMA/SMA Crossover</option>
+                            <option value="multi_strategy">Multi-Strategy</option>
+                            <option value="modular_strategy">Modular Strategy Builder</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Strategy Parameters -->
+                    <div id="strategyParams">
+                        <!-- Supertrend Parameters -->
+                        <div id="supertrendParams" class="strategy-params">
+                            <div class="form-group">
+                                <label for="period">ATR Period</label>
+                                <input type="number" id="period" value="10" min="1" max="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="multiplier">ATR Multiplier</label>
+                                <input type="number" id="multiplier" value="3.0" min="0.1" max="10" step="0.1">
+                            </div>
+                        </div>
+
+                        <!-- EMA Crossover Parameters -->
+                        <div id="emaCrossoverParams" class="strategy-params" style="display: none;">
+                            <div class="form-group">
+                                <label for="shortPeriod">Short Period</label>
+                                <input type="number" id="shortPeriod" value="12" min="1" max="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="longPeriod">Long Period</label>
+                                <input type="number" id="longPeriod" value="26" min="1" max="200">
+                            </div>
+                            <div class="form-group">
+                                <label for="maType">MA Type</label>
+                                <select id="maType">
+                                    <option value="ema">EMA</option>
+                                    <option value="sma">SMA</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Multi-Strategy Parameters -->
+                        <div id="multiStrategyParams" style="display: none;">
+                            <div id="strategyCards">
+                                <!-- Strategy cards will be added here -->
+                            </div>
+                            <button class="btn add-strategy-btn" onclick="addStrategy()">
+                                <i class="fas fa-plus"></i> Add Strategy
+                            </button>
+                        </div>
+
+                        <!-- Modular Strategy Parameters -->
+                        <div id="modularStrategyParams" style="display: none;">
+                            <div class="modular-builder">
+                                <!-- Indicators Section -->
+                                <div class="indicators-section">
+                                    <h4 class="section-header" onclick="toggleSection('indicators')">
+                                        <i class="fas fa-chart-line"></i> Indicators 
+                                        <i class="fas fa-chevron-down" id="indicators-arrow"></i>
+                                    </h4>
+                                    <div class="section-content expanded" id="indicators-content">
+                                        <div id="selectedIndicators">
+                                            <!-- Selected indicators will be added here -->
+                                        </div>
+                                        <button class="btn btn-secondary" onclick="addIndicator()">
+                                            <i class="fas fa-plus"></i> Add Indicator
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Buy Rules Section -->
+                                <div class="rules-section">
+                                    <h4 class="section-header" onclick="toggleSection('buyRules')">
+                                        <i class="fas fa-arrow-up"></i> Buy Rules
+                                        <i class="fas fa-chevron-down" id="buyRules-arrow"></i>
+                                    </h4>
+                                    <div class="section-content expanded" id="buyRules-content">
+                                        <div id="buyRules">
+                                            <!-- Buy rules will be added here -->
+                                        </div>
+                                        <button class="btn btn-secondary" onclick="addBuyRule()">
+                                            <i class="fas fa-plus"></i> Add Buy Rule
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Sell Rules Section -->
+                                <div class="rules-section">
+                                    <h4 class="section-header" onclick="toggleSection('sellRules')">
+                                        <i class="fas fa-arrow-down"></i> Sell Rules
+                                        <i class="fas fa-chevron-down" id="sellRules-arrow"></i>
+                                    </h4>
+                                    <div class="section-content expanded" id="sellRules-content">
+                                        <div id="sellRules">
+                                            <!-- Sell rules will be added here -->
+                                        </div>
+                                        <button class="btn btn-secondary" onclick="addSellRule()">
+                                            <i class="fas fa-plus"></i> Add Sell Rule
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Run Button -->
+                <button class="btn btn-primary" onclick="runBacktest()">
+                    <i class="fas fa-play"></i> Run Backtest
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2><i class="fas fa-chart-bar"></i> Backtest Results</h2>
+                
+                <!-- Loading State -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Running backtest analysis...</p>
+                </div>
+
+                <!-- Results Content -->
+                <div id="resultsContent" style="display: none;">
+                    <!-- Metrics Grid -->
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value" id="totalReturn">-</div>
+                            <div class="metric-label">Total Return</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="buyHoldReturn">-</div>
+                            <div class="metric-label">Buy & Hold Return</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="sharpeRatio">-</div>
+                            <div class="metric-label">Sharpe Ratio</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="maxDrawdown">-</div>
+                            <div class="metric-label">Max Drawdown</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="totalTrades">-</div>
+                            <div class="metric-label">Total Trades</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value" id="winRate">-</div>
+                            <div class="metric-label">Win Rate</div>
+                        </div>
+                    </div>
+
+                    <!-- Equity Curve Chart -->
+                    <div class="chart-section">
+                        <h3><i class="fas fa-chart-line"></i> Equity Curve</h3>
+                        <div class="chart-container">
+                            <canvas id="equityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Trade History -->
+                    <div class="trade-history">
+                        <h3><i class="fas fa-list"></i> Trade History</h3>
+                                                 <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="trade-table" id="tradeTable">
+                                <thead>
+                                    <tr>
+                                        <th>Trade #</th>
+                                        <th>Entry Date</th>
+                                        <th>Exit Date</th>
+                                        <th>Entry Price</th>
+                                        <th>Exit Price</th>
+                                        <th>Action</th>
+                                        <th>P&L</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tradeTableBody">
+                                    <!-- Trade data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let equityChart = null;
+        let strategyCounter = 0;
+
+        // Timeframe management
+        const timeframeLimits = {
+            '1m': 7,
+            '3m': 60,
+            '5m': 60,
+            '15m': 60,
+            '30m': 60,
+            '60m': 730,
+            '1d': null, // Unlimited
+            '1wk': null, // Unlimited
+            '1mo': null  // Unlimited
+        };
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStrategyParams();
+            document.getElementById('strategyName').addEventListener('change', updateStrategyParams);
+            
+            // Initialize timeframe functionality
+            initializeTimeframeSelector();
+        });
+
+        // Timeframe management functions
+        function initializeTimeframeSelector() {
+            const timeframeSelect = document.getElementById('timeframe-select');
+            const maxDaysDisplay = document.getElementById('max-days-display');
+            const quickSelectButtons = document.getElementById('quick-select-buttons');
+            const warningDiv = document.getElementById('timeframe-warning');
+            
+            // Load saved timeframe from localStorage
+            const savedTimeframe = localStorage.getItem('selectedTimeframe') || '1d';
+            timeframeSelect.value = savedTimeframe;
+            
+            // Initialize display
+            updateTimeframeDisplay();
+            
+            // Add event listeners
+            timeframeSelect.addEventListener('change', function() {
+                const selectedTimeframe = this.value;
+                localStorage.setItem('selectedTimeframe', selectedTimeframe);
+                updateTimeframeDisplay();
+                validateAndAdjustDates();
+            });
+            
+            // Add quick select button listeners
+            quickSelectButtons.addEventListener('click', function(event) {
+                if (event.target.classList.contains('btn-quick-select')) {
+                    const days = parseInt(event.target.dataset.days);
+                    setDateRange(days);
+                }
+            });
+        }
+
+        function updateTimeframeDisplay() {
+            const timeframeSelect = document.getElementById('timeframe-select');
+            const maxDaysDisplay = document.getElementById('max-days-display');
+            const quickSelectButtons = document.getElementById('quick-select-buttons');
+            const selectedTimeframe = timeframeSelect.value;
+            const maxDays = timeframeLimits[selectedTimeframe];
+            
+            // Update max days display
+            if (maxDays === null) {
+                maxDaysDisplay.textContent = 'Max: Unlimited';
+                quickSelectButtons.style.display = 'none';
+            } else {
+                maxDaysDisplay.textContent = `Max: ${maxDays} days`;
+                quickSelectButtons.style.display = 'flex';
+                
+                // Update quick select buttons based on timeframe
+                const buttons = quickSelectButtons.querySelectorAll('.btn-quick-select');
+                buttons.forEach(btn => {
+                    const btnDays = parseInt(btn.dataset.days);
+                    btn.style.display = btnDays <= maxDays ? 'block' : 'none';
+                });
+            }
+        }
+
+        function validateAndAdjustDates() {
+            const timeframeSelect = document.getElementById('timeframe-select');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const warningDiv = document.getElementById('timeframe-warning');
+            const warningText = document.getElementById('warning-text');
+            
+            const selectedTimeframe = timeframeSelect.value;
+            const maxDays = timeframeLimits[selectedTimeframe];
+            
+            if (maxDays === null) {
+                // Unlimited timeframe - hide warning
+                warningDiv.style.display = 'none';
+                return;
+            }
+            
+            const startDate = new Date(startDateInput.value);
+            const endDate = new Date(endDateInput.value);
+            const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff > maxDays) {
+                // Show warning and auto-adjust dates
+                warningText.textContent = `Date range adjusted to ${maxDays} days for ${selectedTimeframe} timeframe.`;
+                warningDiv.style.display = 'flex';
+                
+                // Auto-adjust to max allowed days
+                const newStartDate = new Date(endDate);
+                newStartDate.setDate(newStartDate.getDate() - maxDays);
+                
+                startDateInput.value = newStartDate.toISOString().split('T')[0];
+            } else {
+                warningDiv.style.display = 'none';
+            }
+        }
+
+        function setDateRange(days) {
+            const endDateInput = document.getElementById('endDate');
+            const startDateInput = document.getElementById('startDate');
+            
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - days);
+            
+            endDateInput.value = endDate.toISOString().split('T')[0];
+            startDateInput.value = startDate.toISOString().split('T')[0];
+            
+            // Validate the new date range
+            validateAndAdjustDates();
+        }
+
+        // Update strategy parameters based on selection
+        function updateStrategyParams() {
+            const strategyName = document.getElementById('strategyName').value;
+            
+            // Hide all parameter sections
+            document.getElementById('supertrendParams').style.display = 'none';
+            document.getElementById('emaCrossoverParams').style.display = 'none';
+            document.getElementById('multiStrategyParams').style.display = 'none';
+            
+            // Show relevant parameter section
+            if (strategyName === 'supertrend') {
+                document.getElementById('supertrendParams').style.display = 'grid';
+            } else if (strategyName === 'ema_crossover') {
+                document.getElementById('emaCrossoverParams').style.display = 'grid';
+            } else if (strategyName === 'multi_strategy') {
+                document.getElementById('multiStrategyParams').style.display = 'block';
+            }
+        }
+
+        // Add strategy to multi-strategy
+        function addStrategy() {
+            strategyCounter++;
+            const strategyCards = document.getElementById('strategyCards');
+            
+            const strategyCard = document.createElement('div');
+            strategyCard.className = 'strategy-card';
+            strategyCard.innerHTML = `
+                <button class="remove-btn" onclick="removeStrategy(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h4>Strategy ${strategyCounter}</h4>
+                <div class="form-group">
+                    <label>Strategy Type</label>
+                    <select class="strategy-type" onchange="updateMultiStrategyParams(this)">
+                        <option value="supertrend">Supertrend</option>
+                        <option value="ema_crossover">EMA/SMA Crossover</option>
+                    </select>
+                </div>
+                <div class="strategy-params">
+                    <div class="form-group">
+                        <label>Period</label>
+                        <input type="number" class="strategy-period" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Multiplier</label>
+                        <input type="number" class="strategy-multiplier" value="3.0" step="0.1">
+                    </div>
+                </div>
+            `;
+            
+            strategyCards.appendChild(strategyCard);
+        }
+
+        // Update parameters for multi-strategy based on strategy type
+        function updateMultiStrategyParams(selectElement) {
+            const strategyCard = selectElement.closest('.strategy-card');
+            const strategyType = selectElement.value;
+            const paramsContainer = strategyCard.querySelector('.strategy-params');
+            
+            if (strategyType === 'supertrend') {
+                paramsContainer.innerHTML = `
+                    <div class="form-group">
+                        <label>Period</label>
+                        <input type="number" class="strategy-period" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label>Multiplier</label>
+                        <input type="number" class="strategy-multiplier" value="3.0" step="0.1">
+                    </div>
+                `;
+            } else if (strategyType === 'ema_crossover') {
+                paramsContainer.innerHTML = `
+                    <div class="form-group">
+                        <label>Short Period</label>
+                        <input type="number" class="strategy-short-period" value="12">
+                    </div>
+                    <div class="form-group">
+                        <label>Long Period</label>
+                        <input type="number" class="strategy-long-period" value="26">
+                    </div>
+                    <div class="form-group">
+                        <label>MA Type</label>
+                        <select class="strategy-ma-type">
+                            <option value="ema">EMA</option>
+                            <option value="sma">SMA</option>
+                        </select>
+                    </div>
+                `;
+            }
+        }
+
+        // Remove strategy from multi-strategy
+        function removeStrategy(button) {
+            button.parentElement.remove();
+        }
+
+        // Format numbers for display
+        function formatNumber(value, decimals = 2) {
+            if (value === null || value === undefined || isNaN(value)) return '-';
+            return Number(value).toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+        }
+
+        // Format percentage
+        function formatPercentage(value) {
+            if (value === null || value === undefined || isNaN(value)) return '-';
+            return formatNumber(value, 2) + '%';
+        }
+
+        // Safe format function
+        function safeFormat(value, formatter = formatNumber) {
+            try {
+                return formatter(value);
+            } catch (error) {
+                return '-';
+            }
+        }
+
+        // Run backtest
+        async function runBacktest() {
+            const loading = document.getElementById('loading');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            // Show loading
+            loading.classList.add('show');
+            resultsContent.style.display = 'none';
+            
+            try {
+                const strategyName = document.getElementById('strategyName').value;
+                let requestData;
+                
+                if (strategyName === 'multi_strategy') {
+                    requestData = buildMultiStrategyRequest();
+                } else {
+                    requestData = buildSingleStrategyRequest();
+                }
+                
+                const response = await fetch('/api/backtest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error running backtest:', error);
+                alert('Error running backtest. Please try again.');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+
+        // Build single strategy request
+        function buildSingleStrategyRequest() {
+            const strategyName = document.getElementById('strategyName').value;
+            let requestData = {
+                symbol: document.getElementById('symbol').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                initialCapital: parseFloat(document.getElementById('initialCapital').value),
+                strategyType: document.getElementById('strategyType').value,
+                strategy: strategyName,
+                interval: document.getElementById('timeframe-select').value
+            };
+            
+            if (strategyName === 'supertrend') {
+                requestData.period = parseInt(document.getElementById('period').value);
+                requestData.multiplier = parseFloat(document.getElementById('multiplier').value);
+            } else if (strategyName === 'ema_crossover') {
+                requestData.shortPeriod = parseInt(document.getElementById('shortPeriod').value);
+                requestData.longPeriod = parseInt(document.getElementById('longPeriod').value);
+                requestData.maType = document.getElementById('maType').value;
+            }
+            
+            return requestData;
+        }
+
+        // Build multi-strategy request
+        function buildMultiStrategyRequest() {
+            const strategyCards = document.querySelectorAll('.strategy-card');
+            const strategies = [];
+            
+            strategyCards.forEach(card => {
+                const strategyType = card.querySelector('.strategy-type').value;
+                let params = {};
+                
+                if (strategyType === 'supertrend') {
+                    const period = parseInt(card.querySelector('.strategy-period').value);
+                    const multiplier = parseFloat(card.querySelector('.strategy-multiplier').value);
+                    params = {
+                        period: period,
+                        multiplier: multiplier
+                    };
+                } else if (strategyType === 'ema_crossover') {
+                    const shortPeriod = parseInt(card.querySelector('.strategy-short-period').value);
+                    const longPeriod = parseInt(card.querySelector('.strategy-long-period').value);
+                    const maType = card.querySelector('.strategy-ma-type').value;
+                    params = {
+                        shortPeriod: shortPeriod,
+                        longPeriod: longPeriod,
+                        maType: maType
+                    };
+                }
+                
+                strategies.push({
+                    type: strategyType,
+                    params: params
+                });
+            });
+            
+            return {
+                symbol: document.getElementById('symbol').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                initialCapital: parseFloat(document.getElementById('initialCapital').value),
+                strategyType: document.getElementById('strategyType').value,
+                strategy: 'multi_strategy',
+                strategies: strategies,
+                interval: document.getElementById('timeframe-select').value
+            };
+        }
+
+        // Display results
+        function displayResults(data) {
+            const resultsContent = document.getElementById('resultsContent');
+            const summary = data.summary;
+            
+            // Update metrics
+            document.getElementById('totalReturn').textContent = safeFormat(summary.total_return_pct, formatPercentage);
+            document.getElementById('buyHoldReturn').textContent = safeFormat(summary.buy_hold_return_pct, formatPercentage);
+            document.getElementById('sharpeRatio').textContent = safeFormat(summary.sharpe_ratio);
+            document.getElementById('maxDrawdown').textContent = safeFormat(summary.max_drawdown, formatPercentage);
+            document.getElementById('totalTrades').textContent = safeFormat(summary.total_trades, (val) => val.toString());
+            document.getElementById('winRate').textContent = safeFormat(summary.win_rate, formatPercentage);
+            
+            // Update equity chart
+            updateEquityChart(data.equity_curve);
+            
+            // Update trade table
+            updateTradeTable(data.trades);
+            
+            // Show results
+            resultsContent.style.display = 'block';
+        }
+
+        // Update equity chart
+        function updateEquityChart(equityCurve) {
+            const ctx = document.getElementById('equityChart').getContext('2d');
+            
+            if (equityChart) {
+                equityChart.destroy();
+            }
+            
+            const labels = equityCurve.map(point => point.date);
+            const data = equityCurve.map(point => point.equity_curve);
+            
+            // Calculate gradient colors based on performance
+            const firstValue = data[0];
+            const lastValue = data[data.length - 1];
+            const isPositive = lastValue >= firstValue;
+            
+            const gradientColors = isPositive 
+                ? ['rgba(34, 197, 94, 0.8)', 'rgba(34, 197, 94, 0.2)']  // Green gradient
+                : ['rgba(239, 68, 68, 0.8)', 'rgba(239, 68, 68, 0.2)']; // Red gradient
+            
+            const borderColor = isPositive ? '#22c55e' : '#ef4444';
+            
+            equityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: data,
+                        borderColor: borderColor,
+                        backgroundColor: function(context) {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) {
+                                return null;
+                            }
+                            const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                            gradient.addColorStop(0, gradientColors[1]);
+                            gradient.addColorStop(1, gradientColors[0]);
+                            return gradient;
+                        },
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: borderColor,
+                        pointHoverBorderColor: '#ffffff',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#e2e8f0',
+                            borderColor: 'rgba(148, 163, 184, 0.2)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    return 'Date: ' + context[0].label;
+                                },
+                                label: function(context) {
+                                    return 'Portfolio: $' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 11
+                                },
+                                maxTicksLimit: 8
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            position: 'right',
+                            grid: {
+                                color: 'rgba(148, 163, 184, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'K';
+                                },
+                                padding: 8
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverRadius: 6
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update trade table
+        function updateTradeTable(trades) {
+            const tbody = document.getElementById('tradeTableBody');
+            tbody.innerHTML = '';
+            
+            trades.forEach((trade, index) => {
+                const row = document.createElement('tr');
+                const pnlClass = trade.pnl >= 0 ? 'positive' : 'negative';
+                const pnlSign = trade.pnl >= 0 ? '+' : '';
+                
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${trade.entry_date}</td>
+                    <td>${trade.exit_date}</td>
+                    <td>$${formatNumber(trade.entry_price, 2)}</td>
+                    <td>$${formatNumber(trade.exit_price, 2)}</td>
+                    <td>${trade.action}</td>
+                    <td class="${pnlClass}">${pnlSign}$${formatNumber(trade.pnl, 2)}</td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+                 // Modular Strategy Builder Functions
+         let indicatorCounter = 0;
+         let buyRuleCounter = 0;
+         let sellRuleCounter = 0;
+
+        // Available indicators data (only RSI and MACD as provided by user)
+        const availableIndicators = {
+            'rsi': { name: 'RSI', params: { period: 14 } },
+            'macd': { name: 'MACD', params: { fast_period: 12, slow_period: 26, signal_period: 9 } }
+        };
+
+        // Add indicator to modular strategy
+        function addIndicator() {
+            indicatorCounter++;
+            const container = document.getElementById('selectedIndicators');
+            
+            const indicatorCard = document.createElement('div');
+            indicatorCard.className = 'indicator-card';
+            indicatorCard.innerHTML = `
+                <button class="remove-btn" onclick="removeIndicator(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h5>Indicator ${indicatorCounter}</h5>
+                <div class="form-group">
+                    <label>Indicator Type</label>
+                                            <select class="indicator-type" onchange="updateIndicatorParams(this)">
+                            <option value="">Select Indicator</option>
+                            <option value="rsi">RSI</option>
+                            <option value="macd">MACD</option>
+                        </select>
+                </div>
+                <div class="indicator-params">
+                    <!-- Parameters will be added here -->
+                </div>
+            `;
+            
+            container.appendChild(indicatorCard);
+        }
+
+        // Update indicator parameters based on selection
+        function updateIndicatorParams(selectElement) {
+            const indicatorCard = selectElement.closest('.indicator-card');
+            const indicatorType = selectElement.value;
+            const paramsContainer = indicatorCard.querySelector('.indicator-params');
+            
+            if (!indicatorType) {
+                paramsContainer.innerHTML = '';
+                return;
+            }
+            
+            const indicator = availableIndicators[indicatorType];
+            let paramsHTML = '';
+            
+            Object.entries(indicator.params).forEach(([key, value]) => {
+                const label = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                paramsHTML += `
+                    <div class="form-group">
+                        <label>${label}</label>
+                        <input type="number" class="indicator-param" data-param="${key}" value="${value}" step="0.1">
+                    </div>
+                `;
+            });
+            
+            paramsContainer.innerHTML = paramsHTML;
+        }
+
+        // Remove indicator
+        function removeIndicator(button) {
+            button.parentElement.remove();
+        }
+
+                 // Add buy rule
+         function addBuyRule() {
+             buyRuleCounter++;
+             const container = document.getElementById('buyRules');
+             
+             // Add rule logic selector between rules if this is not the first rule
+             if (buyRuleCounter > 1) {
+                 const logicDiv = document.createElement('div');
+                 logicDiv.className = 'rule-logic-between';
+                 logicDiv.innerHTML = `
+                     <div class="form-group">
+                         <label>Combine with previous rule using:</label>
+                         <select class="rule-logic-between-select">
+                             <option value="AND">AND (Both rules must be true)</option>
+                             <option value="OR">OR (Either rule can be true)</option>
+                         </select>
+                     </div>
+                 `;
+                 container.appendChild(logicDiv);
+             }
+             
+             const ruleCard = document.createElement('div');
+             ruleCard.className = 'rule-card';
+             ruleCard.innerHTML = `
+                 <button class="remove-btn" onclick="removeBuyRule(this)">
+                     <i class="fas fa-times"></i>
+                 </button>
+                 <h5>Buy Rule ${buyRuleCounter}</h5>
+                 <div class="rule-conditions">
+                     <div class="condition-group">
+                         <div class="form-group">
+                             <label>Column</label>
+                             <select class="condition-column">
+                                 <option value="RSI">RSI</option>
+                                 <option value="MACD">MACD</option>
+                                 <option value="MACD_Signal">MACD Signal</option>
+                                 <option value="MACD_Histogram">MACD Histogram</option>
+                                 <option value="Close">Close Price</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <label>Operator</label>
+                             <select class="condition-operator">
+                                 <option value=">">&gt;</option>
+                                 <option value="<">&lt;</option>
+                                 <option value=">=">&gt;=</option>
+                                 <option value="<=">&lt;=</option>
+                                 <option value="==">=</option>
+                                 <option value="!=">≠</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <label>Value</label>
+                             <input type="number" class="condition-value" value="0" step="0.1">
+                         </div>
+                         <div class="form-group">
+                             <label>Compare With</label>
+                             <select class="condition-compare">
+                                 <option value="">Fixed Value</option>
+                             </select>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="condition-logic" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(15, 23, 42, 0.3); border-radius: 4px; text-align: center; font-size: 0.75rem; color: #94a3b8;">
+                     <span>This rule will trigger when ALL conditions above are true (AND logic)</span>
+                 </div>
+                 <button class="add-condition-btn" onclick="addCondition(this, 'buy')">
+                     <i class="fas fa-plus"></i> Add Another Condition to This Rule
+                 </button>
+             `;
+             
+             container.appendChild(ruleCard);
+         }
+
+                 // Add sell rule
+         function addSellRule() {
+             sellRuleCounter++;
+             const container = document.getElementById('sellRules');
+             
+             // Add rule logic selector between rules if this is not the first rule
+             if (sellRuleCounter > 1) {
+                 const logicDiv = document.createElement('div');
+                 logicDiv.className = 'rule-logic-between';
+                 logicDiv.innerHTML = `
+                     <div class="form-group">
+                         <label>Combine with previous rule using:</label>
+                         <select class="rule-logic-between-select">
+                             <option value="AND">AND (Both rules must be true)</option>
+                             <option value="OR">OR (Either rule can be true)</option>
+                         </select>
+                     </div>
+                 `;
+                 container.appendChild(logicDiv);
+             }
+             
+             const ruleCard = document.createElement('div');
+             ruleCard.className = 'rule-card';
+             ruleCard.innerHTML = `
+                 <button class="remove-btn" onclick="removeSellRule(this)">
+                     <i class="fas fa-times"></i>
+                 </button>
+                 <h5>Sell Rule ${sellRuleCounter}</h5>
+                 <div class="rule-conditions">
+                     <div class="condition-group">
+                         <div class="form-group">
+                             <label>Column</label>
+                             <select class="condition-column">
+                                 <option value="RSI">RSI</option>
+                                 <option value="MACD">MACD</option>
+                                 <option value="MACD_Signal">MACD Signal</option>
+                                 <option value="MACD_Histogram">MACD Histogram</option>
+                                 <option value="Close">Close Price</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <label>Operator</label>
+                             <select class="condition-operator">
+                                 <option value=">">&gt;</option>
+                                 <option value="<">&lt;</option>
+                                 <option value=">=">&gt;=</option>
+                                 <option value="<=">&lt;=</option>
+                                 <option value="==">=</option>
+                                 <option value="!=">≠</option>
+                             </select>
+                         </div>
+                         <div class="form-group">
+                             <label>Value</label>
+                             <input type="number" class="condition-value" value="0" step="0.1">
+                         </div>
+                         <div class="form-group">
+                             <label>Compare With</label>
+                             <select class="condition-compare">
+                                 <option value="">Fixed Value</option>
+                             </select>
+                         </div>
+                     </div>
+                 </div>
+                 <div class="condition-logic" style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(15, 23, 42, 0.3); border-radius: 4px; text-align: center; font-size: 0.75rem; color: #94a3b8;">
+                     <span>This rule will trigger when ALL conditions above are true (AND logic)</span>
+                 </div>
+                 <button class="add-condition-btn" onclick="addCondition(this, 'sell')">
+                     <i class="fas fa-plus"></i> Add Another Condition to This Rule
+                 </button>
+             `;
+             
+             container.appendChild(ruleCard);
+         }
+
+                 // Add condition to rule
+         function addCondition(button, ruleType) {
+             const ruleCard = button.closest('.rule-card');
+             const ruleConditions = ruleCard.querySelector('.rule-conditions');
+             
+             const newCondition = document.createElement('div');
+             newCondition.className = 'condition-group';
+             newCondition.innerHTML = `
+                 <div class="form-group">
+                     <label>Column</label>
+                     <select class="condition-column">
+                         <option value="RSI">RSI</option>
+                         <option value="MACD">MACD</option>
+                         <option value="MACD_Signal">MACD Signal</option>
+                         <option value="MACD_Histogram">MACD Histogram</option>
+                         <option value="Close">Close Price</option>
+                     </select>
+                 </div>
+                 <div class="form-group">
+                     <label>Operator</label>
+                     <select class="condition-operator">
+                         <option value=">">&gt;</option>
+                         <option value="<">&lt;</option>
+                         <option value=">=">&gt;=</option>
+                         <option value="<=">&lt;=</option>
+                         <option value="==">=</option>
+                         <option value="!=">≠</option>
+                     </select>
+                 </div>
+                 <div class="form-group">
+                     <label>Value</label>
+                     <input type="number" class="condition-value" value="0" step="0.1">
+                 </div>
+                 <div class="form-group">
+                     <label>Compare With</label>
+                     <select class="condition-compare">
+                         <option value="">Fixed Value</option>
+                     </select>
+                 </div>
+                 <button class="remove-condition-btn" onclick="removeCondition(this)" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 4px; padding: 0.25rem; cursor: pointer; font-size: 0.75rem;">
+                     <i class="fas fa-times"></i>
+                 </button>
+             `;
+             
+             ruleConditions.appendChild(newCondition);
+         }
+         
+         // Remove condition
+         function removeCondition(button) {
+             const conditionGroup = button.parentElement;
+             const ruleConditions = conditionGroup.parentElement;
+             
+             // Don't remove the first condition (it's the default one)
+             if (ruleConditions.children.length > 1) {
+                 conditionGroup.remove();
+             }
+         }
+
+                 // Remove buy rule
+         function removeBuyRule(button) {
+             const ruleCard = button.parentElement;
+             const container = ruleCard.parentElement;
+             
+             // Find the rule logic element that comes after this rule
+             const nextElement = ruleCard.nextElementSibling;
+             if (nextElement && nextElement.classList.contains('rule-logic-between')) {
+                 nextElement.remove();
+             }
+             
+             // Find the rule logic element that comes before this rule
+             const prevElement = ruleCard.previousElementSibling;
+             if (prevElement && prevElement.classList.contains('rule-logic-between')) {
+                 prevElement.remove();
+             }
+             
+             // Remove the rule card
+             ruleCard.remove();
+             
+             // Decrease the counter
+             buyRuleCounter--;
+             
+             // If this was the last rule, reset the counter to 0
+             if (buyRuleCounter === 0) {
+                 buyRuleCounter = 0;
+             }
+         }
+         
+         // Remove sell rule
+         function removeSellRule(button) {
+             const ruleCard = button.parentElement;
+             const container = ruleCard.parentElement;
+             
+             // Find the rule logic element that comes after this rule
+             const nextElement = ruleCard.nextElementSibling;
+             if (nextElement && nextElement.classList.contains('rule-logic-between')) {
+                 nextElement.remove();
+             }
+             
+             // Find the rule logic element that comes before this rule
+             const prevElement = ruleCard.previousElementSibling;
+             if (prevElement && prevElement.classList.contains('rule-logic-between')) {
+                 prevElement.remove();
+             }
+             
+             // Remove the rule card
+             ruleCard.remove();
+             
+             // Decrease the counter
+             sellRuleCounter--;
+             
+             // If this was the last rule, reset the counter to 0
+             if (sellRuleCounter === 0) {
+                 sellRuleCounter = 0;
+             }
+         }
+
+        // Toggle section visibility
+        function toggleSection(sectionName) {
+            const content = document.getElementById(sectionName + '-content');
+            const arrow = document.getElementById(sectionName + '-arrow');
+            
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                arrow.style.transform = 'rotate(0deg)';
+            } else {
+                content.classList.add('expanded');
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // Update strategy parameters to include modular strategy
+        function updateStrategyParams() {
+            const strategyName = document.getElementById('strategyName').value;
+            
+            // Hide all parameter sections
+            document.getElementById('supertrendParams').style.display = 'none';
+            document.getElementById('emaCrossoverParams').style.display = 'none';
+            document.getElementById('multiStrategyParams').style.display = 'none';
+            document.getElementById('modularStrategyParams').style.display = 'none';
+            
+            // Show relevant parameter section
+            if (strategyName === 'supertrend') {
+                document.getElementById('supertrendParams').style.display = 'grid';
+            } else if (strategyName === 'ema_crossover') {
+                document.getElementById('emaCrossoverParams').style.display = 'grid';
+            } else if (strategyName === 'multi_strategy') {
+                document.getElementById('multiStrategyParams').style.display = 'block';
+            } else if (strategyName === 'modular_strategy') {
+                document.getElementById('modularStrategyParams').style.display = 'block';
+            }
+        }
+
+                 // Build modular strategy request
+         function buildModularStrategyRequest() {
+             const indicators = [];
+             const buyRules = [];
+             const sellRules = [];
+             
+             // Collect indicators
+             document.querySelectorAll('#selectedIndicators .indicator-card').forEach(card => {
+                 const indicatorType = card.querySelector('.indicator-type').value;
+                 if (indicatorType) {
+                     const params = {};
+                     card.querySelectorAll('.indicator-param').forEach(input => {
+                         const paramName = input.dataset.param;
+                         params[paramName] = parseFloat(input.value);
+                     });
+                     
+                     indicators.push({
+                         name: indicatorType,
+                         params: params
+                     });
+                 }
+             });
+             
+             // Collect buy rules
+             const buyRuleCards = document.querySelectorAll('#buyRules .rule-card');
+             const buyRuleLogics = document.querySelectorAll('#buyRules .rule-logic-between-select');
+             
+             buyRuleCards.forEach((card, index) => {
+                 const conditions = [];
+                 card.querySelectorAll('.rule-conditions .condition-group').forEach(group => {
+                     const column = group.querySelector('.condition-column').value;
+                     const operator = group.querySelector('.condition-operator').value;
+                     const value = group.querySelector('.condition-value').value;
+                     const compare = group.querySelector('.condition-compare').value;
+                     
+                     if (column && operator && value !== '') {
+                         conditions.push({
+                             column: column,
+                             operator: operator,
+                             value: compare || parseFloat(value)
+                         });
+                     }
+                 });
+                 
+                 if (conditions.length > 0) {
+                     const ruleLogic = index > 0 ? buyRuleLogics[index - 1].value : 'AND';
+                     buyRules.push({
+                         conditions: conditions,
+                         logic: ruleLogic
+                     });
+                 }
+             });
+             
+             // Collect sell rules
+             const sellRuleCards = document.querySelectorAll('#sellRules .rule-card');
+             const sellRuleLogics = document.querySelectorAll('#sellRules .rule-logic-between-select');
+             
+             sellRuleCards.forEach((card, index) => {
+                 const conditions = [];
+                 card.querySelectorAll('.rule-conditions .condition-group').forEach(group => {
+                     const column = group.querySelector('.condition-column').value;
+                     const operator = group.querySelector('.condition-operator').value;
+                     const value = group.querySelector('.condition-value').value;
+                     const compare = group.querySelector('.condition-compare').value;
+                     
+                     if (column && operator && value !== '') {
+                         conditions.push({
+                             column: column,
+                             operator: operator,
+                             value: compare || parseFloat(value)
+                         });
+                     }
+                 });
+                 
+                 if (conditions.length > 0) {
+                     const ruleLogic = index > 0 ? sellRuleLogics[index - 1].value : 'AND';
+                     sellRules.push({
+                         conditions: conditions,
+                         logic: ruleLogic
+                     });
+                 }
+             });
+             
+             return {
+                 symbol: document.getElementById('symbol').value,
+                 startDate: document.getElementById('startDate').value,
+                 endDate: document.getElementById('endDate').value,
+                 initialCapital: parseFloat(document.getElementById('initialCapital').value),
+                 strategyType: document.getElementById('strategyType').value,
+                 strategy: 'modular_strategy',
+                 strategyConfig: {
+                     indicators: indicators,
+                     buy_rules: buyRules,
+                     sell_rules: sellRules,
+                     buy_logic: 'OR',
+                     sell_logic: 'OR'
+                 }
+             };
+         }
+
+        // Update runBacktest function to handle modular strategy
+        async function runBacktest() {
+            const loading = document.getElementById('loading');
+            const resultsContent = document.getElementById('resultsContent');
+            
+            // Show loading
+            loading.classList.add('show');
+            resultsContent.style.display = 'none';
+            
+            try {
+                const strategyName = document.getElementById('strategyName').value;
+                let requestData;
+                
+                if (strategyName === 'multi_strategy') {
+                    requestData = buildMultiStrategyRequest();
+                } else if (strategyName === 'modular_strategy') {
+                    requestData = buildModularStrategyRequest();
+                } else {
+                    requestData = buildSingleStrategyRequest();
+                }
+                
+                const response = await fetch('/api/backtest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayResults(data);
+                
+            } catch (error) {
+                console.error('Error running backtest:', error);
+                alert('Error running backtest. Please try again.');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>
